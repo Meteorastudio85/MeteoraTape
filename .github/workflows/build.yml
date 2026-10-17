@@ -1,0 +1,21 @@
+name: Build VST3 (Windows)
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        shell: pwsh
+        run: |
+          $src = (Get-ChildItem -Path . -Recurse -Filter CMakeLists.txt | Sort-Object { $_.FullName.Length } | Select-Object -First 1).DirectoryName
+          Write-Host "CMakeLists.txt trovato in: $src"
+          cmake -S "$src" -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release --parallel
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MeteoraTape-VST3-Windows
+          path: build/MeteoraTape_artefacts/Release/VST3
